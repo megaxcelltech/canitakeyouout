@@ -1,21 +1,56 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import confetti from "canvas-confetti"; // <-- Import Efek Kembang Api
+import confetti from "canvas-confetti";
 
-export default function RetroInvite() {
+export default function SweetInvite() {
   const [hasEntered, setHasEntered] = useState(false);
   const [accepted, setAccepted] = useState(false);
   const [noPosition, setNoPosition] = useState({ x: 0, y: 0 });
   const [isPlaying, setIsPlaying] = useState(false);
   
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const rainIntervalRef = useRef<NodeJS.Timeout | null>(null);
+
+  // ==========================================
+  // EFEK HUJAN PITA PINK TANPA HENTI (INFINITE)
+  // ==========================================
+  const startInfinitePinkRain = () => {
+    // Bersihkan interval sebelumnya jika ada
+    if (rainIntervalRef.current) clearInterval(rainIntervalRef.current);
+
+    // Kirim pita pink secara berkala setiap 150ms agar terus melayang halus
+    rainIntervalRef.current = setInterval(() => {
+      confetti({
+        particleCount: 2, // 2-3 partikel per semprotan agar tetap ringan dan tidak lag
+        angle: 90, // Jatuh tegak lurus dari atas
+        spread: 120,
+        origin: { x: Math.random(), y: -0.1 }, // Muncul acak dari atas luar layar
+        colors: ['#FF69B4', '#FFB6C1', '#F06292', '#FF8A80', '#FFF9C4', '#E1BEE7'],
+        startVelocity: 12,
+        gravity: 0.6,
+        scalar: 1.2, // Ukuran pita sedikit lebih besar
+        drift: Math.random() - 0.5, // Efek melayang tertiup angin
+      });
+    }, 150);
+  };
+
+  // Clean-up saat komponen di-unmount agar tidak ada memori bocor
+  useEffect(() => {
+    return () => {
+      if (rainIntervalRef.current) clearInterval(rainIntervalRef.current);
+    };
+  }, []);
 
   const handleEnter = () => {
     setHasEntered(true);
+    
+    // Mulai hujan pita tanpa henti
+    startInfinitePinkRain();
+
     if (audioRef.current) {
-      audioRef.current.currentTime = 37;
+      audioRef.current.currentTime = 9; 
       audioRef.current.play();
       setIsPlaying(true);
     }
@@ -29,44 +64,44 @@ export default function RetroInvite() {
   };
 
   // ==========================================
-  // FUNGSI HANDLE SAAT DIA KLIK "AYO GAS"
+  // FUNGSI HANDLE SAAT DIA KLIK "AYO GAS!!"
   // ==========================================
   const handleAccept = async (e: React.MouseEvent) => {
     e.stopPropagation();
-    setAccepted(true); // Ubah layar jadi MISSION ACCEPTED
+    setAccepted(true);
 
-    // 1. EFEK KEMBANG API CYBERPUNK
-    const duration = 3 * 1000; // 3 detik
+    // EFEK KEMBANG API PASTEL DARI KIRI & KANAN
+    const duration = 3 * 1000;
     const end = Date.now() + duration;
 
     const frame = () => {
-      const cyberpunkColors = ['#00F0FF', '#FF007F', '#FCEE0A']; 
+      const sweetColors = ['#F06292', '#FF8A80', '#FFCDD2', '#FFF9C4', '#B39DDB']; 
       
       confetti({
         particleCount: 5,
         angle: 60,
         spread: 55,
         origin: { x: 0 },
-        colors: cyberpunkColors
+        colors: sweetColors
       });
       confetti({
         particleCount: 5,
         angle: 120,
         spread: 55,
         origin: { x: 1 },
-        colors: cyberpunkColors
+        colors: sweetColors
       });
 
       if (Date.now() < end) {
         requestAnimationFrame(frame);
       }
     };
-    frame(); // Jalankan kembang api
+    frame();
 
-    // 2. NOTIFIKASI RAHASIA KE TELEGRAM KAMU
+    // NOTIFIKASI RAHASIA KE TELEGRAM
     const telegramToken = "ISI_TOKEN_BOT_DISINI"; 
     const chatId = "ISI_CHAT_ID_DISINI";
-    const textMsg = "🚨 ALARM! NazwaFivanka udah ngeklik 'AYO GAS!!'. Gas mandi dan siap-siap bro!";
+    const textMsg = "🚨 ALARM! Indri udah ngeklik 'AYO GAS!!'. Gas mandi dan siap-siap bro!";
     
     try {
       if (telegramToken !== "ISI_TOKEN_BOT_DISINI") {
@@ -78,35 +113,20 @@ export default function RetroInvite() {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-[#050511] text-gray-200 p-4 overflow-hidden relative font-sans">
+    <div className="flex flex-col items-center justify-center min-h-screen bg-pink-50 text-gray-800 p-4 overflow-hidden relative font-sans">
       
-      {/* ============================== */}
-      {/* LAYER BACKGROUND & EFEK UI/UX  */}
-      {/* ============================== */}
+      {/* 1. Wallpaper Background Cerah - Pola Hati Lembut */}
+      <div className="absolute inset-0 z-0 bg-[url('https://www.transparenttextures.com/patterns/heart-pattern.png')] bg-repeat opacity-10"></div>
 
-      {/* 1. Wallpaper Gambar Dasar */}
-      <div className="absolute inset-0 z-0 bg-[url('/Wallpaper.jpg')] bg-cover bg-center bg-no-repeat"></div>
-
-      {/* 2. Overlay Gradient Gelap (Agar gambar meredup dan UI tetap terbaca jelas) */}
-      <div className="absolute inset-0 z-0 bg-gradient-to-br from-[#050511]/90 via-[#120428]/80 to-[#000000]/95"></div>
-
-      {/* 3. Synthwave Grid Lines (Efek kotak-kotak di atas gambar) */}
-      <div className="absolute inset-0 z-0 bg-[linear-gradient(rgba(0,240,255,0.07)_1px,transparent_1px),linear-gradient(90deg,rgba(0,240,255,0.07)_1px,transparent_1px)] bg-[size:40px_40px]"></div>
-
-      {/* 4. Efek CSS Grain/Noise Gelap */}
-      <svg className="pointer-events-none absolute inset-0 z-0 h-full w-full opacity-[0.25] mix-blend-screen">
-        <filter id="noiseFilter">
-          <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="3" stitchTiles="stitch" />
-        </filter>
-        <rect width="100%" height="100%" filter="url(#noiseFilter)" />
-      </svg>
+      {/* 2. Overlay Gradient Putih-Pink Lembut */}
+      <div className="absolute inset-0 z-0 bg-gradient-to-br from-white/95 via-pink-100/80 to-white/95"></div>
 
       <audio ref={audioRef} src="/lagu.mp3" loop />
 
       <AnimatePresence>
         {!hasEntered ? (
           // ==============================
-          // 1. LAYAR PEMBUKA (CYBERPUNK SPLASH SCREEN)
+          // 1. LAYAR PEMBUKA (SWEET SPLASH SCREEN)
           // ==============================
           <motion.div 
             key="welcome-screen"
@@ -117,19 +137,18 @@ export default function RetroInvite() {
             <motion.div 
               initial={{ y: 20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
-              className="bg-[#0a0a0a]/80 backdrop-blur-md p-10 rounded-2xl shadow-[0_0_30px_rgba(255,0,127,0.2)] border border-[#FF007F]/40 flex flex-col items-center relative overflow-hidden"
+              className="bg-white/90 backdrop-blur-md p-10 rounded-3xl shadow-[0_10px_40px_rgba(240,98,146,0.15)] border border-pink-100 flex flex-col items-center relative overflow-hidden"
             >
-              {/* Glitch Accent Line */}
-              <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[#00F0FF] via-[#FF007F] to-[#FCEE0A]"></div>
+              <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-pink-200 via-pink-300 to-pink-200"></div>
 
-              <h1 className="text-xl tracking-[0.2em] font-mono font-bold mb-8 text-center text-[#00F0FF] uppercase drop-shadow-[0_0_8px_rgba(0,240,255,0.8)]">
+              <h1 className="text-2xl tracking-[0.1em] font-extrabold mb-8 text-center text-pink-700 uppercase drop-shadow-sm">
                  Coffee and You ? ☕
               </h1>
               <motion.button
-                whileHover={{ scale: 1.05 }}
+                whileHover={{ scale: 1.05, translateY: -2 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={handleEnter}
-                className="px-8 py-4 bg-[#FCEE0A] text-black tracking-widest font-black uppercase rounded shadow-[0_0_15px_rgba(252,238,10,0.5)] hover:shadow-[0_0_25px_rgba(252,238,10,0.8)] transition-all font-mono"
+                className="px-10 py-5 bg-pink-400 text-white tracking-widest font-bold uppercase rounded-xl shadow-md hover:bg-pink-500 transition-all font-sans"
               >
                Click Here..
               </motion.button>
@@ -137,7 +156,7 @@ export default function RetroInvite() {
           </motion.div>
         ) : (
           // ==============================
-          // 2. KONTEN UNDANGAN UTAMA (NIGHT CITY VIBES)
+          // 2. KONTEN UNDANGAN UTAMA (SWEET VIBES)
           // ==============================
           <motion.div 
             key="main-content"
@@ -146,17 +165,13 @@ export default function RetroInvite() {
             transition={{ duration: 1, delay: 0.3 }}
             className="z-10 flex flex-col items-center justify-center w-full max-w-lg"
           >
-            {/* Dark Glass Card Container */}
-            <div className="bg-[#050511]/70 backdrop-blur-xl rounded-[2rem] shadow-[0_0_40px_rgba(0,240,255,0.1)] border border-[#00F0FF]/30 p-8 sm:p-12 w-full relative overflow-hidden">
+            <div className="bg-white/80 backdrop-blur-xl rounded-[3rem] shadow-[0_20px_60px_rgba(240,98,146,0.1)] border border-pink-100 p-8 sm:p-12 w-full relative overflow-hidden">
               
-              {/* Highlight Neon di sudut Card */}
-              <div className="absolute top-0 left-0 w-32 h-32 bg-[#FF007F]/20 rounded-full blur-3xl -translate-x-10 -translate-y-10"></div>
-              <div className="absolute bottom-0 right-0 w-32 h-32 bg-[#00F0FF]/20 rounded-full blur-3xl translate-x-10 translate-y-10"></div>
+              <div className="absolute top-0 left-0 w-32 h-32 bg-pink-200/30 rounded-full blur-3xl -translate-x-10 -translate-y-10"></div>
+              <div className="absolute bottom-0 right-0 w-32 h-32 bg-pink-200/30 rounded-full blur-3xl translate-x-10 translate-y-10"></div>
 
               {accepted ? (
-                // ===============================================
-                // TAMPILAN KALAU DIA KLIK "AYO GAS" (MISSION ACCEPTED)
-                // ===============================================
+                // TAMPILAN SETELAH "AYO GAS!!" DIKLIK
                 <motion.div 
                   initial={{ opacity: 0, scale: 0.8 }}
                   animate={{ opacity: 1, scale: 1 }}
@@ -165,70 +180,69 @@ export default function RetroInvite() {
                   <motion.h1 
                     initial={{ y: -20 }}
                     animate={{ y: 0 }}
-                    className="text-4xl font-black mb-4 tracking-tight text-[#FCEE0A] drop-shadow-[0_0_10px_rgba(252,238,10,0.6)]"
+                    className="text-4xl font-extrabold mb-4 tracking-tight text-pink-700 drop-shadow-sm"
                   >
                     MISSION ACCEPTED! ✨
                   </motion.h1>
-                  <p className="text-lg text-gray-300 font-medium font-mono mb-8">
-                      Pesan Telah Terkirim... 100% <br/>
-                      Koordinat titik temu segera dikirim.
+                  <p className="text-lg text-gray-700 font-medium font-sans mb-10 leading-relaxed px-2">
+                    Sampai ketemu hari Selasa, 18 Agustus 2026 ya! Nanti kabarin aja enaknya ngopi di mana ✨
                   </p>
 
-                  {/* TOMBOL NEXT KE WHATSAPP */}
                   <motion.button
-                    whileHover={{ scale: 1.05 }}
+                    whileHover={{ scale: 1.05, translateY: -3 }}
                     whileTap={{ scale: 0.95 }}
                     onClick={() => {
-                      // GANTI NOMOR WA DI BAWAH INI DENGAN NOMORMU (AWALAN 62)
                       const noWA = "62882000090278"; 
-                      const pesanWA = "Halo! ayo gas 🚀😁";
+                      const pesanWA = "Halo! Mission Accepted nih 🚀😁 Sampai ketemu hari Selasa, 18 Agustus 2026 ya! Nanti kabarin aja enaknya ngopi di mana ✨";
                       window.open(`https://wa.me/${noWA}?text=${encodeURIComponent(pesanWA)}`, "_blank");
                     }}
-                    className="px-8 py-3 bg-[#00F0FF] text-black tracking-widest font-black uppercase rounded shadow-[0_0_15px_rgba(0,240,255,0.5)] hover:shadow-[0_0_25px_rgba(0,240,255,0.8)] transition-all font-mono"
+                    className="px-10 py-4 bg-pink-500 text-white tracking-widest font-extrabold uppercase rounded-full shadow-lg hover:bg-pink-600 transition-all font-sans"
                   >
                     NEXT {">"} {">"}
                   </motion.button>
                 </motion.div>
               ) : (
-                // ===============================================
-                // TAMPILAN AWAL (UNDANGAN)
-                // ===============================================
+                // TAMPILAN AWAL UNDANGAN
                 <div className="relative z-10 flex flex-col items-center">
                   
-                  {/* Piringan Hitam (Vinyl) dengan aksen Neon */}
+                  {/* FRAME FOTO INDRI YANG MUTER */}
                   <motion.div 
                     animate={{ rotate: isPlaying ? 360 : 0 }} 
-                    transition={{ repeat: Infinity, duration: 3, ease: "linear" }}
-                    className="w-48 h-48 bg-gradient-to-tr from-[#0a0a0a] via-gray-900 to-black rounded-full flex items-center justify-center shadow-[0_0_30px_rgba(255,0,127,0.3)] mb-8 border-4 border-gray-950 ring-1 ring-[#FF007F]/40 relative"
+                    transition={{ repeat: Infinity, duration: 8, ease: "linear" }}
+                    className="w-48 h-48 rounded-full flex items-center justify-center shadow-[0_10px_30px_rgba(240,98,146,0.2)] mb-8 border-4 border-white ring-4 ring-pink-200/60 relative overflow-hidden"
                   >
-                    {/* Alur piringan hitam */}
-                    <div className="absolute w-36 h-36 rounded-full border border-gray-800/80"></div>
-                    <div className="absolute w-28 h-28 rounded-full border border-gray-800/80"></div>
-                    
-                    {/* Label Tengah Vinyl (Holographic Pink/Cyan) */}
-                    <div className="w-16 h-16 bg-gradient-to-br from-[#FF007F] to-[#7000FF] rounded-full flex items-center justify-center shadow-[inset_0_0_10px_rgba(0,0,0,0.8)] border-2 border-[#00F0FF]/50">
-                      <div className="w-4 h-4 bg-black rounded-full shadow-inner border border-[#00F0FF]"></div>
-                    </div>
+                    <img 
+                      src="fotoprofil.jpeg" 
+                      alt="Indri Khoerunnisa" 
+                      className="w-full h-full object-cover" 
+                    />
                   </motion.div>
 
                   {/* Teks Undangan */}
                   <div className="text-center mb-10">
-                    <h2 className="text-xs font-bold mb-3 tracking-[0.3em] font-mono text-[#00F0FF] drop-shadow-[0_0_5px_rgba(0,240,255,0.8)]">
-                      ♫ Temper City - Self Aware ♫
+                    <h2 className="text-sm font-bold mb-3 tracking-[0.2em] font-sans text-pink-600 drop-shadow-sm uppercase">
+                      ♫ FIFTY FIFTY - Cupid ♫
                     </h2>
-                    <h1 className="text-2xl font-black mb-4 text-[#FCEE0A] drop-shadow-[0_0_8px_rgba(252,238,10,0.4)]">
-                      Halo, NazwaFivanka! 🎧
+                    <h1 className="text-3xl font-extrabold text-pink-700 drop-shadow-sm leading-tight">
+                      Hallow, Indri Khoerunnisa! 🎧
                     </h1>
-                    <p className="text-sm text-gray-300 leading-relaxed font-mono">
-                      Aku tahu kamu lagi sibuk sibuknya dengan tugas kuliah , Alangkah baiknya , Jika ada waktu , mari kita me Re-Charge Energy bersama sama hehehe 😁
+                    <span className="inline-block text-lg font-bold text-pink-500 mb-4 bg-pink-100/70 px-4 py-1 rounded-full mt-2">
+                      👑 Queendri
+                    </span>
+                    
+                    <p className="text-base text-gray-700 leading-relaxed font-sans px-2 mb-2 font-medium">
+                      Panggilan khusus untuk hari <b>Selasa, 18 Agustus 2026!</b> 🗓️
+                    </p>
+                    <p className="text-sm text-gray-600 leading-relaxed font-sans px-2">
+                      Boleh kali buat ngobrol-ngobrol dan Re-Charge Energy bareng hihi.🤭
                     </p>
                   </div>
 
                   {/* Tombol Pilihan */}
-                  <div className="flex gap-4 justify-center w-full relative z-20 font-mono">
+                  <div className="flex gap-5 justify-center w-full relative z-20 font-sans">
                     <button 
                       onClick={handleAccept}
-                      className="px-8 py-3 bg-[#FCEE0A] text-black font-bold uppercase rounded shadow-[0_0_15px_rgba(252,238,10,0.4)] hover:bg-[#e6d900] hover:shadow-[0_0_25px_rgba(252,238,10,0.7)] hover:-translate-y-1 transition-all z-20"
+                      className="px-10 py-4 bg-pink-400 text-white font-bold uppercase rounded-full shadow-md hover:bg-pink-500 transition-all z-20"
                     >
                       AYO GAS!!
                     </button>
@@ -240,7 +254,7 @@ export default function RetroInvite() {
                         e.stopPropagation();
                         kaburDong();
                       }}
-                      className="px-8 py-3 bg-black/50 backdrop-blur-sm text-[#FF007F] font-bold uppercase rounded border border-[#FF007F] shadow-[0_0_10px_rgba(255,0,127,0.3)] hover:bg-[#FF007F]/10 transition-colors z-20"
+                      className="px-10 py-4 bg-white/60 backdrop-blur-sm text-pink-500 font-bold uppercase rounded-full border-2 border-pink-200 shadow-inner hover:bg-pink-50 transition-colors z-20"
                     >
                       🚫😡
                     </motion.button>
